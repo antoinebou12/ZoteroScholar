@@ -33,14 +33,17 @@ class QueryProcessor:
         self.model_name = model_name
         self.qdrant = self._create_vector_store()
         self.chain = self._build_chain()
+        
 
     def _create_vector_store(self) -> Qdrant:
         try:
-            qdrant = Qdrant.from_documents(
-                documents=self.paper_chunks,
-                embedding=GPT4AllEmbeddings(),
-                path=self.qdrant_path,
+            qdrant_host = os.getenv('QDRANT_HOST', 'localhost')
+            qdrant_port = int(os.getenv('QDRANT_PORT', '6333'))
+            qdrant_client = QdrantClient(host=qdrant_host, port=qdrant_port)
+            qdrant = Qdrant(
+                client=qdrant_client,
                 collection_name=self.collection_name,
+                embeddings=GPT4AllEmbeddings(),
             )
             logger.info("Qdrant vector store created successfully.")
             return qdrant
@@ -55,8 +58,13 @@ class QueryProcessor:
 
 Question: {question}
 """
+        ollama_host = os.getenv('OLLAMA_HOST', 'localhost')
+        ollama_port = int(os.getenv('OLLAMA_PORT', '11434'))
+        model = ChatOllama(
+            model=self.model_name,
+            base_url=f"http://{ollama_host}:{ollama_port}",
+        )
         prompt = ChatPromptTemplate.from_template(template)
-        model = ChatOllama(model=self.model_name)
         chain = (
             RunnableParallel({"context": retriever, "question": RunnablePassthrough()})
             | prompt
