@@ -44,7 +44,7 @@ services:
     runtime: nvidia
 
   ollama:
-    image: ghcr.io/jmorganca/ollama:latest
+    image: ollama/ollama:0.4.1-rc0-rocm
     container_name: ollama
     restart: always
     ports:
