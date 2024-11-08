@@ -1,3 +1,6 @@
 streamlit
-requests
-pandas
+pyzotero
+PyPDF2
+langchain
+qdrant-client
+nvidia-ml-py3
